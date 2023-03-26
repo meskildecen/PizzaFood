@@ -111,25 +111,33 @@ c('.pizzaInfo--qtmais').addEventListener('click', () => {
     c('.pizzaInfo--qt').innerHTML = modalQt;
 });
 
+// adiciona um listener de eventos de clique para cada botão de tamanho da pizza
 cs('.pizzaInfo--size').forEach((size, sizeIndex) => {
     size.addEventListener('click', (e) => {
+        // remove a classe "selected" do tamanho da pizza atualmente selecionado
         c('.pizzaInfo--size.selected').classList.remove('selected');
+        // adiciona a classe "selected" ao tamanho da pizza clicado
         size.classList.add('selected');
     });
 });
 
+// adiciona um listener de eventos de clique para o botão "Adicionar ao carrinho"
 c('.pizzaInfo--addButton').addEventListener('click', () => {
+    // obtém o tamanho da pizza selecionado
     let size = parseInt(c('.pizzaInfo--size.selected').getAttribute('data-key'));
 
-
+    // cria um identificador para o item adicionado ao carrinho com o ID da pizza e o tamanho
     let indentifier = pizzaJson[modalKey].id + '@' + size;
 
+    // procura se o item já está no carrinho
     let key = cart.findIndex((item) => item.indentifier == indentifier);
 
-
+    // se já estiver no carrinho, apenas adiciona a quantidade
     if (key > -1) {
         cart[key].qt += modalQt;
-    } else {
+    } 
+    // caso contrário, adiciona o item ao carrinho
+    else {
         cart.push({
             indentifier,
             id: pizzaJson[modalKey].id,
@@ -137,11 +145,35 @@ c('.pizzaInfo--addButton').addEventListener('click', () => {
             qt: modalQt
         });
     }
+
+    // atualiza o carrinho na interface
     updateCart();
+
+    // fecha o modal
     closeModal();
 });
 
+// adiciona um listener de eventos de clique para o botão "Abrir carrinho"
+c('.menu-openner').addEventListener('click', ()=>{
+    // se o carrinho não estiver vazio, mostra o carrinho
+    if(cart.length > 0) {
+        c('aside').style.left = '0';
+    }    
+});
+
+// adiciona um listener de eventos de clique para o botão "Fechar carrinho"
+c('.menu-closer').addEventListener('click', ()=>{
+    // esconde o carrinho
+    c('aside').style.left = '100vw';
+});
+
+// define a função para atualizar o carrinho na interface
 function updateCart(){
+
+    // atualiza o número de itens do carrinho no botão "Abrir carrinho"
+    c('.menu-openner span').innerHTML = cart.length;
+
+    // se o carrinho não estiver vazio, atualiza o subtotal, desconto e total
     if(cart.length > 0){
         c('aside').classList.add('show');
         c('.cart').innerHTML = '';
@@ -150,13 +182,17 @@ function updateCart(){
         let desconto = 0;
         let total = 0;
 
+        // para cada item no carrinho, adiciona um elemento ao carrinho na interface
         for(let i in cart){
+            // encontra a pizza correspondente ao ID do item no carrinho
             let pizzaItem = pizzaJson.find((item)=>item.id == cart[i].id);
+            // calcula o subtotal
             subtotal += pizzaItem.price * cart[i].qt;
 
-
+            // clona o modelo de item do carrinho e preenche as informações
             let cartItem = c('.models .cart--item').cloneNode(true);
 
+            // Define o tamanho da pizza com base na escolha do usuário
             let pizzaSizeName;
             switch(cart[i].size){
                 case 0:
@@ -169,12 +205,14 @@ function updateCart(){
                     pizzaSizeName = 'G';
                     break;
             }
+
+            // Define o nome da pizza com base no nome e tamanho escolhidos
             let pizzaName = `${pizzaItem.name} (${pizzaSizeName})`;
-
-
+            // Atualiza as informações do item do carrinho
             cartItem.querySelector('img').src = pizzaItem.img;
             cartItem.querySelector('.cart--item-nome').innerHTML = pizzaName;
             cartItem.querySelector('.cart--item--qt').innerHTML = cart[i].qt;
+            // Adiciona evento de clique para remover uma unidade do item do carrinho
             cartItem.querySelector('.cart--item-qtmenos').addEventListener('click', ()=>{
                 
                 if(cart[i].qt > 1){
@@ -184,22 +222,24 @@ function updateCart(){
                 }
                 updateCart();
             });
+            // Adiciona evento de clique para adicionar uma unidade do item do carrinho
             cartItem.querySelector('.cart--item-qtmais').addEventListener('click', ()=>{
                 cart[i].qt++;
                 updateCart();
             });
-
+            // Adiciona o item do carrinho ao DOM
             c('.cart').append(cartItem);
         }
-
+        // Calcula o desconto e o total da compra
         desconto = subtotal * 0.1;
         total = subtotal - desconto;
-
+        // Atualiza os valores exibidos na página
         c('.subtotal span:last-child').innerHTML = `R$ ${subtotal.toFixed(2)}`;
         c('.desconto span:last-child').innerHTML = `R$ ${desconto.toFixed(2)}`;
         c('.total span:last-child').innerHTML = `R$ ${total.toFixed(2)}`;
-
+        // Esconde o carrinho se não houver nenhum item nele
     }else{
         c('aside').classList.remove('show');
+        c('aside').style.left = '100vw';
     }
-};
+};s
